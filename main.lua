@@ -6,8 +6,8 @@ local map = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1
 function love.load()
 	player.x = 30
 	player.y = 30
-	player.speed = 60
-	player.sprite = love.graphics.newImage("player.png")
+	player.speed = 1
+	player.sprite = love.graphics.newImage("sprites/player.png")
 	player.width = player.sprite:getWidth()
 	player.height = player.sprite:getHeight()
 
@@ -15,18 +15,18 @@ function love.load()
 	map.h = 10
 	map.ox = 30
 	map.oy = 30
-	map.wall = love.graphics.newImage("wall.png") -- 1
-	map.grass = love.graphics.newImage("grass.png") -- 0
+	map.wall = love.graphics.newImage("sprites/wall.png") -- 1
+	map.grass = love.graphics.newImage("sprites/grass.png") -- 0
 
 	player.x = player.x + map.ox
 	player.y = player.y + map.oy
 end
 
 function love.update(dt)
-	updatePlayer(dt)
+	updatePlayer()
 end
 
-function updatePlayer(dt)
+function updatePlayer()
 
 	local up = love.keyboard.isDown("up")
 	local down = love.keyboard.isDown("down")
@@ -34,19 +34,19 @@ function updatePlayer(dt)
 	local right = love.keyboard.isDown("right")
 
 	if up and not upCollide() then
-		player.y = math.floor(player.y - player.speed * dt)
+		player.y = player.y - player.speed
 	end
 
 	if down and not downCollide() then
-        player.y = math.ceil(player.y + player.speed * dt)
+        player.y = player.y + player.speed
     end
 	
 	if left and not leftCollide() then
-        player.x = math.floor(player.x - player.speed * dt)
+        player.x = player.x - player.speed
     end
 
 	if right and not rightCollide() then
-        player.x = math.ceil(player.x + player.speed * dt)
+        player.x = player.x + player.speed
     end
 end
 
@@ -54,18 +54,17 @@ function upCollide()
 	--ul
 	local ulx = math.floor(player.x)
 	local uly = math.floor(player.y)
-	uly = uly - 1 --simula o movimento para cima
+	uly = uly - player.speed --simula o movimento para cima
 	local res_ul = innerMapId(ulx, uly)
 	res_ul = res_ul + 1 --pois o array comeca em 1
 
 	--ur
 	local urx = math.floor(player.x) + player.width - 1
 	local ury = math.floor(player.y)
-	ury = ury - 1
+	ury = ury - player.speed
 	local res_ur = innerMapId(urx, ury)
 	res_ur = res_ur + 1
 
-	-- 0 = block
 	if map[res_ul] == 1 or map[res_ur] == 1 then
 		return true
 	else
@@ -77,14 +76,14 @@ function downCollide()
 	--ll
 	local llx = math.floor(player.x)
 	local lly = math.floor(player.y) + player.height - 1
-	lly = lly + 1
+	lly = lly + player.speed
 	local res_ll = innerMapId(llx, lly)
 	res_ll = res_ll + 1
 
 	--lr
 	local lrx = math.floor(player.x) + player.width - 1
 	local lry = math.floor(player.y) + player.height - 1
-	lry = lry + 1
+	lry = lry + player.speed
 	local res_lr = innerMapId(lrx, lry)
 	res_lr = res_lr + 1
 
@@ -99,14 +98,14 @@ function leftCollide()
 	--ul
 	local ulx = math.floor(player.x)
 	local uly = math.floor(player.y)
-	ulx = ulx - 1
+	ulx = ulx - player.speed
 	local res_ul = innerMapId(ulx, uly)
 	res_ul = res_ul + 1
 
 	--ll
 	local llx = math.floor(player.x)
 	local lly = math.floor(player.y) + player.height - 1
-	llx = llx - 1
+	llx = llx - player.speed
 	local res_ll = innerMapId(llx, lly)
 	res_ll = res_ll + 1
 
@@ -121,14 +120,14 @@ function rightCollide()
 	--ur
 	local urx = math.floor(player.x) + player.width - 1
 	local ury = math.floor(player.y)
-	urx = urx + 1
+	urx = urx + player.speed
 	local res_ur = innerMapId(urx, ury)
 	res_ur = res_ur + 1
 
 	--lr
 	local lrx = math.floor(player.x) + player.width - 1
 	local lry = math.floor(player.y) + player.height - 1
-	lrx = lrx + 1
+	lrx = lrx + player.speed
 	local res_lr = innerMapId(lrx, lry)
 	res_lr = res_lr + 1
 
@@ -173,5 +172,5 @@ function drawMap()
 end
 
 function drawPlayer()
-	love.graphics.draw(player.sprite, math.floor(player.x), math.floor(player.y))
+	love.graphics.draw(player.sprite, player.x, player.y)
 end
