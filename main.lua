@@ -43,7 +43,7 @@ function init()
 end
 
 function createStanScene(mp, ens)
-	scene = {}
+	local scene = {}
 	scene.type = stanScene
 	scene.map = mp
 	scene.enemies = ens
