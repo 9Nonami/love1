@@ -1,14 +1,22 @@
 require("collision")
 
 spriteSize = 30 --collision acessa
-local maps = {}
+
 local sprites = {}
-local enemies = {}
 local player = {}
+local scenes = {}
+
+--identificador da cena atual
 local id = 1
 
+--tipos de cenas
+local stanScene = 1
+
+
+
+--INI
 function love.load()
-	--todo : criear uma tabela soh para inimigos
+	--todo : criar uma tabela soh para sprites de inimigos
 	sprites.wall = love.graphics.newImage("sprites/wall.png")
 	sprites.grass = love.graphics.newImage("sprites/grass.png")
 	sprites.enemy = love.graphics.newImage("sprites/enemy.png")
@@ -18,7 +26,8 @@ end
 
 function init()
 	createPlayer()
-	--mapa 1
+
+	--scene_1
 	local map1 = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 	setBasicMapInfo(map1, 10, 10, 30, 30)
 
@@ -27,9 +36,18 @@ function init()
 	createEnemy(240, 30, 1, map1, enemiesMap1)
 	createEnemy(210, 210, 1, map1, enemiesMap1)
 
-	table.insert(enemies, enemiesMap1)
-	--
+	createStanScene(map1, enemiesMap1)
+
+	--pegar pela scene
 	definePlayerPosition(30, 30, map1)
+end
+
+function createStanScene(mp, ens)
+	scene = {}
+	scene.type = stanScene
+	scene.map = mp
+	scene.enemies = ens
+	table.insert(scenes, scene)
 end
 
 function createPlayer()
@@ -50,7 +68,6 @@ function setBasicMapInfo(mp, w, h, ox, oy)
 	mp.h = h
 	mp.ox = ox
 	mp.oy = oy
-	table.insert(maps, mp)
 end
 
 function createEnemy(x, y, speed, map, ens)
@@ -64,9 +81,17 @@ function createEnemy(x, y, speed, map, ens)
 	table.insert(ens, enemy)
 end
 
+--UPDATES
 function love.update(dt)
-	updatePlayer()
-	updateEnemies()
+	updateScene()
+end
+
+function updateScene()
+	local tp = scenes[id].type
+	if tp == stanScene then
+		updatePlayer()
+		updateEnemies(scenes[id].enemies)
+	end
 end
 
 function updatePlayer()
@@ -75,21 +100,27 @@ function updatePlayer()
 	local left = love.keyboard.isDown("left")
 	local right = love.keyboard.isDown("right")
 
-	if up and not upCollide(maps[id], player) then
+	if up and not upCollide(scenes[id].map, player) then
 		player.y = player.y - player.speed
 	end
 
-	if down and not downCollide(maps[id], player) then
+	if down and not downCollide(scenes[id].map, player) then
         player.y = player.y + player.speed
     end
 	
-	if left and not leftCollide(maps[id], player) then
+	if left and not leftCollide(scenes[id].map, player) then
         player.x = player.x - player.speed
     end
 
-	if right and not rightCollide(maps[id], player) then
+	if right and not rightCollide(scenes[id].map, player) then
         player.x = player.x + player.speed
     end
+end
+
+function updateEnemies(enemies)
+	for i = 1, #enemies do
+		updateEnemy(enemies[i])
+	end
 end
 
 function updateEnemy(enemy)
@@ -112,35 +143,37 @@ function updateEnemy(enemy)
 			right = true
 		end
 
-		if up and not upCollide(maps[id], enemy) then
+		if up and not upCollide(scenes[id].map, enemy) then
 			enemy.y = enemy.y - enemy.speed
 		end
 
-		if down and not downCollide(maps[id], enemy) then
+		if down and not downCollide(scenes[id].map, enemy) then
 	        enemy.y = enemy.y + enemy.speed
 	    end
 		
-		if left and not leftCollide(maps[id], enemy) then
+		if left and not leftCollide(scenes[id].map, enemy) then
 	        enemy.x = enemy.x - enemy.speed
 	    end
 
-		if right and not rightCollide(maps[id], enemy) then
+		if right and not rightCollide(scenes[id].map, enemy) then
 	        enemy.x = enemy.x + enemy.speed
 	    end
 
 	end
 end
 
-function updateEnemies()
-	for i = 1, #enemies[id] do
-		updateEnemy(enemies[id][i])
-	end
+--DRAW
+function love.draw()
+	drawScene()
 end
 
-function love.draw()
-	drawMap(maps[id])
-	drawPlayer()
-	drawEnemies()
+function drawScene()
+	local tp = scenes[id].type
+	if tp == stanScene then
+		drawMap(scenes[id].map)
+		drawPlayer()
+		drawEnemies(scenes[id].enemies)
+	end
 end
 
 function drawMap(map)
@@ -169,12 +202,12 @@ function drawPlayer()
 	love.graphics.draw(sprites.player, player.x, player.y)
 end
 
-function drawEnemy(enemy)
-	love.graphics.draw(sprites.enemy, enemy.x, enemy.y)
+function drawEnemies(enemies)
+	for i = 1, #enemies do
+		drawEnemy(enemies[i])
+	end
 end
 
-function drawEnemies()
-	for i = 1, #enemies[id] do
-		drawEnemy(enemies[id][i])
-	end
+function drawEnemy(enemy)
+	love.graphics.draw(sprites.enemy, enemy.x, enemy.y)
 end
