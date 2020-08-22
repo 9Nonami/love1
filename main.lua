@@ -32,9 +32,9 @@ function init()
 	setBasicMapInfo(map1, 10, 10, 30, 30)
 
 	local enemiesMap1 = {}
-	createEnemy(30, 240, 1, map1, enemiesMap1)
-	createEnemy(240, 30, 1, map1, enemiesMap1)
-	createEnemy(210, 210, 1, map1, enemiesMap1)
+	createEnemy(210, 210, 1, map1, enemiesMap1, 30, 90)
+	createEnemy(240, 30, 1, map1, enemiesMap1, 210, 120)
+	createEnemy(30, 240, 1, map1, enemiesMap1, 30, 150)
 
 	createStanScene(map1, enemiesMap1)
 
@@ -47,6 +47,7 @@ function createStanScene(mp, ens)
 	scene.type = stanScene
 	scene.map = mp
 	scene.enemies = ens
+	scene.endScene = false
 	table.insert(scenes, scene)
 end
 
@@ -70,7 +71,7 @@ function setBasicMapInfo(mp, w, h, ox, oy)
 	mp.oy = oy
 end
 
-function createEnemy(x, y, speed, map, ens)
+function createEnemy(x, y, speed, map, ens, gx, gy)
 	local enemy = {}
 	enemy.x = x + map.ox
 	enemy.y = y + map.oy
@@ -78,6 +79,10 @@ function createEnemy(x, y, speed, map, ens)
 	enemy.width = sprites.enemy:getWidth()
 	enemy.height = sprites.enemy:getHeight()
 	enemy.alive = true
+
+	enemy.gx = gx + map.ox
+	enemy.gy = gy + map.oy
+
 	table.insert(ens, enemy)
 end
 
@@ -91,6 +96,7 @@ function updateScene()
 	if tp == stanScene then
 		updatePlayer()
 		updateEnemies(scenes[id].enemies)
+		updateWinStanScene(scenes[id].enemies)
 	end
 end
 
@@ -159,6 +165,21 @@ function updateEnemy(enemy)
 	        enemy.x = enemy.x + enemy.speed
 	    end
 
+	    if enemy.x == enemy.gx and enemy.y == enemy.gy then
+	    	enemy.alive = false
+	    end
+
+	end
+end
+
+function updateWinStanScene(enemies)
+	local win = true
+	for i = 1, #enemies do
+		win = win and not enemies[i].alive
+	end
+
+	if win then
+		scenes[id].endScene = true
 	end
 end
 
@@ -173,6 +194,10 @@ function drawScene()
 		drawMap(scenes[id].map)
 		drawPlayer()
 		drawEnemies(scenes[id].enemies)
+	end
+
+	if scenes[id].endScene then
+		love.graphics.print("win", 0, 0)
 	end
 end
 
