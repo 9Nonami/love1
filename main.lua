@@ -5,7 +5,7 @@ spriteSize = 30 --collision acessa
 local sprites = {}
 local player = {}
 local scenes = {}
-local buttons = {}
+local mainButtons = {}
 
 --identificador da cena atual
 local id = 2
@@ -45,7 +45,10 @@ function init()
 
 	createStanScene(map1, enemiesMap1)
 	
-	createButton(10, 10, sprites.stan, sprites.focus, startButton)
+	local start_button = createButton(10, 10, sprites.stan, sprites.focus, startButton)
+	
+	table.insert(mainButtons, start_button)
+
 	createMainScene()
 
 	--pegar pela scene
@@ -113,7 +116,7 @@ function createButton(x, y, stan, focus, id)
 	b.w = stan:getWidth()
 	b.h = stan:getHeight()
 	b.on = false
-	table.insert(buttons, b)
+	return b
 end
 
 --UPDATES
@@ -130,7 +133,7 @@ function updateScene()
 		updateEnemies(scenes[id].enemies)
 		updateWinStanScene(scenes[id].enemies)
 	elseif tp == mainScene then
-		local btId = updateButtons(buttons, mx, my)
+		local btId = updateButtons(mainButtons, mx, my)
 		if btId ~= -1 then
 			--love.event.quit()
 			if btId == startButton then
@@ -213,18 +216,25 @@ function updateEnemy(enemy)
 end
 
 function updateWinStanScene(enemies)
-	local win = true
-	for i = 1, #enemies do
-		win = win and not enemies[i].alive
-	end
+	if not scenes[id].endScene then
+		local win = true
+		for i = 1, #enemies do
+			win = win and not enemies[i].alive
+		end
 
-	if win then
-		scenes[id].endScene = true
+		if win then
+			scenes[id].endScene = true
+		end
+	else
+		local mousePressed = love.mouse.isDown("l")
+		if mousePressed then
+			id = 2
+		end
 	end
 end
 
 function updateButtons(bts, mx, my)
-	local mousePressed = love.mouse.isDown(1)
+	local mousePressed = love.mouse.isDown("l")
 	for i = 1, #bts do
 		bts[i].on = mx > bts[i].x and mx < bts[i].x + bts[i].w and my > bts[i].y and my < bts[i].y + bts[i].h
 		if mousePressed  and bts[i].on then
@@ -250,7 +260,7 @@ function drawScene()
 			love.graphics.print("win", 0, 0)
 		end
 	elseif tp == mainScene then
-		drawButtons(buttons)
+		drawButtons(mainButtons)
 	end
 end
 
@@ -291,7 +301,7 @@ function drawEnemy(enemy)
 end
 
 function drawButtons(bts)
-	for i = 1, #buttons do
+	for i = 1, #bts do
 		if bts[i].on then
 			love.graphics.draw(bts[i].stan, bts[i].x, bts[i].y)
 		else
@@ -299,3 +309,6 @@ function drawButtons(bts)
 		end
 	end
 end
+
+--reset(ens)
+--resetStan(stan)
