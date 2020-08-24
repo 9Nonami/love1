@@ -43,31 +43,28 @@ function init()
 	createEnemy(240, 30, 1, map1, enemiesMap1, 210, 120)
 	createEnemy(30, 240, 1, map1, enemiesMap1, 30, 150)
 
-	createStanScene(map1, enemiesMap1)
+	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy})
 	
 	local start_button = createButton(10, 10, sprites.stan, sprites.focus, startButton)
 	
 	table.insert(mainButtons, start_button)
 
 	createMainScene()
-
-	--pegar pela scene
-	definePlayerPosition(30, 30, map1)
 end
 
-function createStanScene(mp, ens)
+function createStanScene(mp, ens, ppos)
 	local scene = {}
 	scene.type = stanScene
 	scene.map = mp
 	scene.enemies = ens
 	scene.endScene = false
+	scene.ppos = ppos
 	table.insert(scenes, scene)
 end
 
 function createMainScene()
 	local scene = {}
 	scene.type = mainScene
-	scene.endScene = false
 	table.insert(scenes, scene)
 end
 
@@ -79,9 +76,8 @@ function createPlayer()
 	player.height = sprites.player:getHeight()
 end
 
-function definePlayerPosition(x, y, mp)
-	player.x = x + mp.ox
-	player.y = y + mp.oy
+function definePlayerPosition(scn)
+	player.x, player.y = scn.ppos[1], scn.ppos[2]
 end
 
 function setBasicMapInfo(mp, w, h, ox, oy)
@@ -99,10 +95,10 @@ function createEnemy(x, y, speed, map, ens, gx, gy)
 	enemy.width = sprites.enemy:getWidth()
 	enemy.height = sprites.enemy:getHeight()
 	enemy.alive = true
-
 	enemy.gx = gx + map.ox
 	enemy.gy = gy + map.oy
-
+	enemy.orx = enemy.x
+	enemy.ory = enemy.y
 	table.insert(ens, enemy)
 end
 
@@ -135,9 +131,9 @@ function updateScene()
 	elseif tp == mainScene then
 		local btId = updateButtons(mainButtons, mx, my)
 		if btId ~= -1 then
-			--love.event.quit()
 			if btId == startButton then
 				id = 1
+				definePlayerPosition(scenes[id])
 			end
 		end
 	end
@@ -216,6 +212,7 @@ function updateEnemy(enemy)
 end
 
 function updateWinStanScene(enemies)
+	print(scenes[id].endScene)
 	if not scenes[id].endScene then
 		local win = true
 		for i = 1, #enemies do
@@ -228,6 +225,7 @@ function updateWinStanScene(enemies)
 	else
 		local mousePressed = love.mouse.isDown("l")
 		if mousePressed then
+			resetStan()
 			id = 2
 		end
 	end
@@ -310,5 +308,13 @@ function drawButtons(bts)
 	end
 end
 
+function resetStan()
+	scenes[id].endScene = false
+	for i = 1, #scenes[id].enemies do
+		scenes[id].enemies[i].x = scenes[id].enemies[i].orx
+		scenes[id].enemies[i].y = scenes[id].enemies[i].ory
+		scenes[id].enemies[i].alive = true
+	end
+end
 --reset(ens)
 --resetStan(stan)
