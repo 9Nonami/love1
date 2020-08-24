@@ -5,12 +5,17 @@ spriteSize = 30 --collision acessa
 local sprites = {}
 local player = {}
 local scenes = {}
+local buttons = {}
 
 --identificador da cena atual
-local id = 1
+local id = 2
 
 --tipos de cenas
 local stanScene = 1
+local mainScene = 2
+
+--ids dos botoes
+local startButton = 1
 
 
 
@@ -21,6 +26,8 @@ function love.load()
 	sprites.grass = love.graphics.newImage("sprites/grass.png")
 	sprites.enemy = love.graphics.newImage("sprites/enemy.png")
 	sprites.player = love.graphics.newImage("sprites/player.png")
+	sprites.stan = love.graphics.newImage("sprites/stan-bt.png")
+	sprites.focus = love.graphics.newImage("sprites/focus-bt.png")
 	init()
 end
 
@@ -37,6 +44,9 @@ function init()
 	createEnemy(30, 240, 1, map1, enemiesMap1, 30, 150)
 
 	createStanScene(map1, enemiesMap1)
+	
+	createButton(10, 10, sprites.stan, sprites.focus, startButton)
+	createMainScene()
 
 	--pegar pela scene
 	definePlayerPosition(30, 30, map1)
@@ -47,6 +57,13 @@ function createStanScene(mp, ens)
 	scene.type = stanScene
 	scene.map = mp
 	scene.enemies = ens
+	scene.endScene = false
+	table.insert(scenes, scene)
+end
+
+function createMainScene()
+	local scene = {}
+	scene.type = mainScene
 	scene.endScene = false
 	table.insert(scenes, scene)
 end
@@ -86,6 +103,19 @@ function createEnemy(x, y, speed, map, ens, gx, gy)
 	table.insert(ens, enemy)
 end
 
+function createButton(x, y, stan, focus, id)
+	local b = {}
+	b.x = x
+	b.y = y
+	b.stan = stan
+	b.focus = focus
+	b.id = id
+	b.w = stan:getWidth()
+	b.h = stan:getHeight()
+	b.on = false
+	table.insert(buttons, b)
+end
+
 --UPDATES
 function love.update(dt)
 	updateScene()
@@ -93,10 +123,20 @@ end
 
 function updateScene()
 	local tp = scenes[id].type
+	local mx = love.mouse.getX()
+	local my = love.mouse.getY()
 	if tp == stanScene then
 		updatePlayer()
 		updateEnemies(scenes[id].enemies)
 		updateWinStanScene(scenes[id].enemies)
+	elseif tp == mainScene then
+		local btId = updateButtons(buttons, mx, my)
+		if btId ~= -1 then
+			--love.event.quit()
+			if btId == startButton then
+				id = 1
+			end
+		end
 	end
 end
 
@@ -183,6 +223,17 @@ function updateWinStanScene(enemies)
 	end
 end
 
+function updateButtons(bts, mx, my)
+	local mousePressed = love.mouse.isDown(1)
+	for i = 1, #bts do
+		bts[i].on = mx > bts[i].x and mx < bts[i].x + bts[i].w and my > bts[i].y and my < bts[i].y + bts[i].h
+		if mousePressed  and bts[i].on then
+			return bts[i].id
+		end
+	end
+	return -1
+end
+
 --DRAW
 function love.draw()
 	drawScene()
@@ -194,10 +245,12 @@ function drawScene()
 		drawMap(scenes[id].map)
 		drawPlayer()
 		drawEnemies(scenes[id].enemies)
-	end
 
-	if scenes[id].endScene then
-		love.graphics.print("win", 0, 0)
+		if scenes[id].endScene then
+			love.graphics.print("win", 0, 0)
+		end
+	elseif tp == mainScene then
+		drawButtons(buttons)
 	end
 end
 
@@ -235,4 +288,14 @@ end
 
 function drawEnemy(enemy)
 	love.graphics.draw(sprites.enemy, enemy.x, enemy.y)
+end
+
+function drawButtons(bts)
+	for i = 1, #buttons do
+		if bts[i].on then
+			love.graphics.draw(bts[i].stan, bts[i].x, bts[i].y)
+		else
+			love.graphics.draw(bts[i].focus, bts[i].x, bts[i].y)
+		end
+	end
 end
