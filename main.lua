@@ -6,6 +6,7 @@ local sprites = {}
 local player = {}
 local scenes = {}
 local mainButtons = {}
+local stanButtons = {}
 
 --identificador da cena atual
 local id = 2
@@ -16,6 +17,7 @@ local mainScene = 2
 
 --ids dos botoes
 local startButton = 1
+local nextButton = 2
 
 
 
@@ -46,8 +48,10 @@ function init()
 	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy})
 	
 	local start_button = createButton(10, 10, sprites.stan, sprites.focus, startButton)
-	
+	local next_button = createButton(300, 10, sprites.stan, sprites.focus, nextButton)
+
 	table.insert(mainButtons, start_button)
+	table.insert(stanButtons, next_button)
 
 	createMainScene()
 end
@@ -122,21 +126,17 @@ end
 
 function updateScene()
 	local tp = scenes[id].type
+
 	local mx = love.mouse.getX()
 	local my = love.mouse.getY()
+	local mousePressed = love.mouse.isDown("l")
+
 	if tp == stanScene then
-		updatePlayer()
-		updateEnemies(scenes[id].enemies)
-		updateWinStanScene(scenes[id].enemies)
+		updateStanScene(mx, my, mousePressed)
 	elseif tp == mainScene then
-		local btId = updateButtons(mainButtons, mx, my)
-		if btId ~= -1 then
-			if btId == startButton then
-				id = 1
-				definePlayerPosition(scenes[id])
-			end
-		end
+		updateMainScene(mx, my, mousePressed)
 	end
+
 end
 
 function updatePlayer()
@@ -211,28 +211,43 @@ function updateEnemy(enemy)
 	end
 end
 
-function updateWinStanScene(enemies)
-	print(scenes[id].endScene)
+function updateMainScene(mx, my, mousePressed)
+	local btId = updateButtons(mainButtons, mx, my, mousePressed)
+	if btId ~= -1 then
+		if btId == startButton then
+			id = 1
+			definePlayerPosition(scenes[id])
+		end
+	end
+end
+
+function updateStanScene(mx, my, mousePressed)
+	updatePlayer()
+	updateEnemies(scenes[id].enemies)
+	updateWinStanScene(scenes[id].enemies, mx, my, mousePressed)
+end
+
+function updateWinStanScene(enemies, mx, my, mousePressed)
 	if not scenes[id].endScene then
 		local win = true
 		for i = 1, #enemies do
 			win = win and not enemies[i].alive
 		end
-
 		if win then
 			scenes[id].endScene = true
 		end
 	else
-		local mousePressed = love.mouse.isDown("l")
-		if mousePressed then
-			resetStan()
-			id = 2
+		local tempId = updateButtons(stanButtons, mx, my, mousePressed)
+		if tempId ~= -1 then -- -1 em var
+			if tempId == nextButton then
+				resetStan()
+				id = 2
+			end
 		end
 	end
 end
 
-function updateButtons(bts, mx, my)
-	local mousePressed = love.mouse.isDown("l")
+function updateButtons(bts, mx, my, mousePressed)
 	for i = 1, #bts do
 		bts[i].on = mx > bts[i].x and mx < bts[i].x + bts[i].w and my > bts[i].y and my < bts[i].y + bts[i].h
 		if mousePressed  and bts[i].on then
@@ -256,6 +271,7 @@ function drawScene()
 
 		if scenes[id].endScene then
 			love.graphics.print("win", 0, 0)
+			drawButtons(stanButtons)
 		end
 	elseif tp == mainScene then
 		drawButtons(mainButtons)
