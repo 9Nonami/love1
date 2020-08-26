@@ -19,6 +19,9 @@ local mainScene = 2
 local startButton = 1
 local nextButton = 2
 
+local mousePressed = false
+local lockPressed = false
+
 
 
 --INI
@@ -122,6 +125,7 @@ end
 --UPDATES
 function love.update(dt)
 	updateScene()
+	mousePressed = false
 end
 
 function updateScene()
@@ -129,7 +133,6 @@ function updateScene()
 
 	local mx = love.mouse.getX()
 	local my = love.mouse.getY()
-	local mousePressed = love.mouse.isDown("l")
 
 	if tp == stanScene then
 		updateStanScene(mx, my, mousePressed)
@@ -137,6 +140,10 @@ function updateScene()
 		updateMainScene(mx, my, mousePressed)
 	end
 
+end
+
+function love.mousepressed(x, y, button_callback, istouch, presses)
+	mousePressed = true
 end
 
 function updatePlayer()
