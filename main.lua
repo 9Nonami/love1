@@ -142,7 +142,7 @@ function updateScene()
 
 end
 
-function love.mousepressed(x, y, button_callback, istouch, presses)
+function love.mousereleased(x, y, button_callback, istouch, presses)
 	mousePressed = true
 end
 
