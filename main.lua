@@ -56,7 +56,7 @@ function init()
 	createEnemy(240, 30, 1, map1, enemiesMap1, 210, 120)
 	createEnemy(30, 240, 1, map1, enemiesMap1, 30, 150)
 
-	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy})
+	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy}, 1)
 	
 	local start_button = createButton(10, 10, sprites.start, sprites.focus, startButton)
 	local next_scene_button = createButton(300, 10, sprites.ns, sprites.focus, nextSceneButton)
@@ -70,13 +70,14 @@ function init()
 	table.insert(stanButtons, next_scene_button)
 end
 
-function createStanScene(mp, ens, ppos)
+function createStanScene(mp, ens, ppos, nx)
 	local scene = {}
 	scene.type = stanScene
 	scene.map = mp
 	scene.enemies = ens
 	scene.endScene = false
 	scene.ppos = ppos
+	scene.nextScene = nx
 	table.insert(scenes, scene)
 end
 
@@ -259,7 +260,7 @@ function updateWinStanScene(enemies, mx, my, mousePressed)
 		if tempId ~= -1 then -- -1 em var
 			if tempId == nextSceneButton then
 				resetStan()
-				id = 1
+				id = scenes[id].nextScene
 			end
 		end
 	end
