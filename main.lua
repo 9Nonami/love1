@@ -8,19 +8,20 @@ local scenes = {}
 local mainButtons = {}
 local stanButtons = {}
 
---identificador da cena atual
-local id = 2
-
 --tipos de cenas
-local stanScene = 1
-local mainScene = 2
+local mainScene = -1
+local stanScene = -2
 
 --ids dos botoes
 local startButton = 1
-local nextButton = 2
+local nextSceneButton = 2
+local nextButton = 3
+local previousButton = 4
 
 local mousePressed = false
-local lockPressed = false
+
+--identificador da cena atual
+local id = 1
 
 
 
@@ -31,7 +32,11 @@ function love.load()
 	sprites.grass = love.graphics.newImage("sprites/grass.png")
 	sprites.enemy = love.graphics.newImage("sprites/enemy.png")
 	sprites.player = love.graphics.newImage("sprites/player.png")
-	sprites.stan = love.graphics.newImage("sprites/stan-bt.png")
+
+	sprites.ns = love.graphics.newImage("sprites/next-scene.png")
+	sprites.prev = love.graphics.newImage("sprites/prev.png")
+	sprites.next = love.graphics.newImage("sprites/next.png")
+	sprites.start = love.graphics.newImage("sprites/start.png")
 	sprites.focus = love.graphics.newImage("sprites/focus-bt.png")
 	init()
 end
@@ -39,7 +44,10 @@ end
 function init()
 	createPlayer()
 
-	--scene_1
+	--cena 1 em scenes
+	createMainScene()
+
+	--cena 2
 	local map1 = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 	setBasicMapInfo(map1, 10, 10, 30, 30)
 
@@ -50,13 +58,16 @@ function init()
 
 	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy})
 	
-	local start_button = createButton(10, 10, sprites.stan, sprites.focus, startButton)
-	local next_button = createButton(300, 10, sprites.stan, sprites.focus, nextButton)
+	local start_button = createButton(10, 10, sprites.start, sprites.focus, startButton)
+	local next_scene_button = createButton(300, 10, sprites.ns, sprites.focus, nextSceneButton)
+	local next_button = createButton(110, 100, sprites.next, sprites.focus, nextButton)
+	local prev_button = createButton(10, 100, sprites.prev, sprites.focus, previousButton)
 
 	table.insert(mainButtons, start_button)
-	table.insert(stanButtons, next_button)
+	table.insert(mainButtons, prev_button)
+	table.insert(mainButtons, next_button)
 
-	createMainScene()
+	table.insert(stanButtons, next_scene_button)
 end
 
 function createStanScene(mp, ens, ppos)
@@ -222,7 +233,7 @@ function updateMainScene(mx, my, mousePressed)
 	local btId = updateButtons(mainButtons, mx, my, mousePressed)
 	if btId ~= -1 then
 		if btId == startButton then
-			id = 1
+			id = 2
 			definePlayerPosition(scenes[id])
 		end
 	end
@@ -246,9 +257,9 @@ function updateWinStanScene(enemies, mx, my, mousePressed)
 	else
 		local tempId = updateButtons(stanButtons, mx, my, mousePressed)
 		if tempId ~= -1 then -- -1 em var
-			if tempId == nextButton then
+			if tempId == nextSceneButton then
 				resetStan()
-				id = 2
+				id = 1
 			end
 		end
 	end
@@ -323,7 +334,7 @@ end
 
 function drawButtons(bts)
 	for i = 1, #bts do
-		if bts[i].on then
+		if not bts[i].on then
 			love.graphics.draw(bts[i].stan, bts[i].x, bts[i].y)
 		else
 			love.graphics.draw(bts[i].focus, bts[i].x, bts[i].y)
