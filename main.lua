@@ -27,6 +27,7 @@ local id = 1
 
 --save
 local saveFileName = "save.lua"
+local totalSlots = 8
 local save = {}
 
 
@@ -55,8 +56,8 @@ function initSaveFile()
 		l()
 	else
 		--arquivo nao existe
-		for i, v in ipairs(save) do
-			v[i] = -1
+		for i = 1, totalSlots do
+			save[i] = -1
 		end
 		love.filesystem.write(saveFileName, table.show(save, "save"))
 	end
