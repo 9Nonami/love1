@@ -1,4 +1,5 @@
 require("collision")
+require("show")
 
 spriteSize = 30 --collision acessa
 
@@ -24,6 +25,10 @@ local mousePressed = false
 local id = 1
 
 
+--save
+local saveFileName = "save.lua"
+local save = {}
+
 
 --INI
 function love.load()
@@ -38,7 +43,23 @@ function love.load()
 	sprites.next = love.graphics.newImage("sprites/next.png")
 	sprites.start = love.graphics.newImage("sprites/start.png")
 	sprites.focus = love.graphics.newImage("sprites/focus-bt.png")
+	initSaveFile()
 	init()
+end
+
+function initSaveFile()
+	local f = love.filesystem.getInfo(saveFileName)
+	if f then
+		--arquivo existe
+		local l = love.filesystem.load(saveFileName)
+		l()
+	else
+		--arquivo nao existe
+		for i, v in ipairs(save) do
+			v[i] = -1
+		end
+		love.filesystem.write(saveFileName, table.show(save, "save"))
+	end
 end
 
 function init()
