@@ -24,6 +24,10 @@ local mousePressed = false
 --identificador da cena atual
 local id = 1
 
+--id temporario, para selecao de cenas
+local starterId = 2 --id da primeira cena jogavel em scenes
+local tid = starterId --sempre vai comecar com o id da primeira cena jogavel
+local limit = 0 --limite para o tid
 
 --save
 local saveFileName = "save.lua"
@@ -49,18 +53,34 @@ function love.load()
 end
 
 function initSaveFile()
+
+	--verifica dentro do save quantas telas estao liberadas
+	local function getLimit()
+		for i = 1, #save do
+			if save[i] ~= -1 then
+				limit = limit + 1
+			end
+		end
+		limit = limit - 1
+	end
+
 	local f = love.filesystem.getInfo(saveFileName)
+	
 	if f then
 		--arquivo existe
 		local l = love.filesystem.load(saveFileName)
 		l()
 	else
 		--arquivo nao existe
-		for i = 1, totalSlots do
+		save[1] = 0
+		for i = 2, totalSlots - 1 do
 			save[i] = -1
 		end
 		love.filesystem.write(saveFileName, table.show(save, "save"))
 	end
+
+	getLimit()
+
 end
 
 function init()
@@ -256,8 +276,16 @@ function updateMainScene(mx, my, mousePressed)
 	local btId = updateButtons(mainButtons, mx, my, mousePressed)
 	if btId ~= -1 then
 		if btId == startButton then
-			id = 2
+			id = tid
 			definePlayerPosition(scenes[id])
+		elseif btId == previousButton then --(<)
+			if tid > starterId then
+				tid = tid - 1
+			end
+		elseif btId == nextButton then
+			if tid < limit + starterId then
+				tid = tid + 1
+			end
 		end
 	end
 end
@@ -301,6 +329,7 @@ end
 --DRAW
 function love.draw()
 	drawScene()
+	love.graphics.print(tid, 200, 0)
 end
 
 function drawScene()
