@@ -1,5 +1,5 @@
 require("collision")
-require("show")
+local saveData = require("saveData")
 
 spriteSize = 30 --collision acessa
 
@@ -30,7 +30,7 @@ local tid = starterId --sempre vai comecar com o id da primeira cena jogavel
 local limit = 0 --limite para o tid
 
 --save
-local saveFileName = "save.lua"
+local saveFileName = "save"
 local totalSlots = 8
 local save = {}
 
@@ -54,32 +54,27 @@ end
 
 function initSaveFile()
 
-	--verifica dentro do save quantas telas estao liberadas
-	local function getLimit()
-		for i = 1, #save do
-			if save[i] ~= -1 then
-				limit = limit + 1
-			end
-		end
-		limit = limit - 1
-	end
-
 	local f = love.filesystem.getInfo(saveFileName)
 	
 	if f then
 		--arquivo existe
-		local l = love.filesystem.load(saveFileName)
-		l()
+		save = saveData.load(saveFileName)
 	else
 		--arquivo nao existe
 		save[1] = 0
-		for i = 2, totalSlots - 1 do
+		for i = 2, totalSlots do
 			save[i] = -1
 		end
-		love.filesystem.write(saveFileName, table.show(save, "save"))
+		saveData.save(save, saveFileName)
 	end
 
-	getLimit()
+	--verifica dentro do save quantas telas estao liberadas
+	for i = 1, #save do
+		if save[i] ~= -1 then
+			limit = limit + 1
+		end
+	end
+	limit = limit - 1
 
 end
 
