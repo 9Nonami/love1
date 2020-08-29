@@ -68,14 +68,7 @@ function initSaveFile()
 		saveData.save(save, saveFileName)
 	end
 
-	--verifica dentro do save quantas telas estao liberadas
-	for i = 1, #save do
-		if save[i] ~= -1 then
-			limit = limit + 1
-		end
-	end
-	limit = limit - 1
-
+	updateLimit()
 end
 
 function init()
@@ -364,8 +357,20 @@ function checkUnlockScene(uid)
 		if save[uid - 1] ~= 0 then
 			save[uid - 1] = 0
 			saveData.save(save, saveFileName)
+			updateLimit()
 		end
 	end
+end
+
+function updateLimit()
+	--verifica dentro do save quantas telas estao liberadas
+	limit = 0
+	for i = 1, #save do
+		if save[i] ~= -1 then
+			limit = limit + 1
+		end
+	end
+	limit = limit - 1
 end
 
 --DRAW
