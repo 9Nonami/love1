@@ -79,22 +79,52 @@ function initSaveFile()
 end
 
 function init()
+
 	createPlayer()
 
 	--cena 1 em scenes
 	createMainScene()
 
-	--cena 2
-	local map1 = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-	setBasicMapInfo(map1, 10, 10, 30, 30)
 
+	--cena 2
+	local map1 = {
+					1,1,1,1,1,1,1,1,1,1,
+					1,0,0,0,0,0,0,1,0,1,
+					1,1,1,1,1,1,0,1,0,1,
+					1,0,0,0,0,0,0,1,0,1,
+					1,1,1,0,1,1,1,0,0,1,
+					1,0,0,0,0,0,0,0,0,1,
+					1,0,0,0,1,0,1,1,1,1,
+					1,1,1,0,1,0,1,0,0,1,
+					1,0,0,0,1,0,0,0,0,1,
+					1,1,1,1,1,1,1,1,1,1}
+	setBasicMapInfo(map1, 10, 10, 30, 30)
 	local enemiesMap1 = {}
 	createEnemy(210, 210, 1, map1, enemiesMap1, 30, 90)
 	createEnemy(240, 30, 1, map1, enemiesMap1, 210, 120)
 	createEnemy(30, 240, 1, map1, enemiesMap1, 30, 150)
-
-	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy}, 1)
+	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy}, 3)
 	
+
+	--cena 3
+	local map2 = {
+					1,1,1,1,1,1,1,1,1,1,
+					1,0,0,0,0,0,0,0,0,1,
+					1,0,0,0,0,0,0,0,0,1,
+					1,0,0,0,0,0,0,0,0,1,
+					1,0,0,0,0,0,0,0,0,1,
+					1,0,0,0,0,0,0,0,0,1,
+					1,0,0,0,0,0,0,0,0,1,
+					1,0,0,0,0,0,0,0,0,1,
+					1,0,0,0,0,0,0,0,0,1,
+					1,1,1,1,1,1,1,1,1,1}
+	setBasicMapInfo(map2, 10, 10, 0, 0)
+	local enemiesMap2 = {}
+	createEnemy(150, 150, 1, map2, enemiesMap2, 30, 30)
+	createStanScene(map2, enemiesMap2, {30 + map2.ox, 30 + map2.oy}, 1)
+
+
+	--BUTTONS------------------------------------------------
 	local start_button = createButton(10, 10, sprites.start, sprites.focus, startButton)
 	local next_scene_button = createButton(300, 10, sprites.ns, sprites.focus, nextSceneButton)
 	local next_button = createButton(110, 100, sprites.next, sprites.focus, nextButton)
@@ -188,7 +218,6 @@ function updateScene()
 	elseif tp == mainScene then
 		updateMainScene(mx, my, mousePressed)
 	end
-
 end
 
 function love.mousereleased(x, y, button_callback, istouch, presses)
@@ -306,6 +335,10 @@ function updateWinStanScene(enemies, mx, my, mousePressed)
 			if tempId == nextSceneButton then
 				resetStan()
 				id = scenes[id].nextScene
+				checkUnlockScene(id) --se deu unlock, salva
+				if scenes[id].type == stanScene then
+					definePlayerPosition(scenes[id])
+				end
 			end
 		end
 	end
@@ -319,6 +352,20 @@ function updateButtons(bts, mx, my, mousePressed)
 		end
 	end
 	return -1
+end
+
+function checkUnlockScene(uid)
+	--precisa ser diferente de 1, pos 1 eh o main
+	--dar um jeito de melhorar isso para nextscenes
+	--que nao sejam stan. ex.: uid > x; x = nonstan
+	if uid ~= 1 then
+		-- -1 pois eh o offset atual --todo: colocar em var
+		-- main ocupa a cena1, entao precisa desconsiderar 1 unidade
+		if save[uid - 1] ~= 0 then
+			save[uid - 1] = 0
+			saveData.save(save, saveFileName)
+		end
+	end
 end
 
 --DRAW
@@ -397,5 +444,3 @@ function resetStan()
 		scenes[id].enemies[i].alive = true
 	end
 end
---reset(ens)
---resetStan(stan)
