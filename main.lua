@@ -12,6 +12,7 @@ local stanButtons = {}
 --tipos de cenas
 local mainScene = -1
 local stanScene = -2
+local dialogScene = -3
 
 --ids dos botoes
 local startButton = 1
@@ -25,8 +26,7 @@ local mousePressed = false
 local id = 1
 
 --id temporario, para selecao de cenas
-local starterId = 2 --id da primeira cena jogavel em scenes
-local tid = starterId --sempre vai comecar com o id da primeira cena jogavel
+local tid = 1
 local limit = 0 --limite para o tid
 
 --save
@@ -80,7 +80,11 @@ function init()
 
 
 	--cena 2
-	local map1 = {
+	createDialogScene({"uno", "dos", "tres"}, nil, 1)
+
+
+	--cena 3
+	--[[local map1 = {
 					1,1,1,1,1,1,1,1,1,1,
 					1,0,0,0,0,0,0,1,0,1,
 					1,1,1,1,1,1,0,1,0,1,
@@ -96,11 +100,11 @@ function init()
 	createEnemy(210, 210, 1, map1, enemiesMap1, 30, 90)
 	createEnemy(240, 30, 1, map1, enemiesMap1, 210, 120)
 	createEnemy(30, 240, 1, map1, enemiesMap1, 30, 150)
-	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy}, 3)
+	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy}, 3)--]]
 	
 
-	--cena 3
-	local map2 = {
+	--cena 4
+	--[[local map2 = {
 					1,1,1,1,1,1,1,1,1,1,
 					1,0,0,0,0,0,0,0,0,1,
 					1,0,0,0,0,0,0,0,0,1,
@@ -114,7 +118,7 @@ function init()
 	setBasicMapInfo(map2, 10, 10, 0, 0)
 	local enemiesMap2 = {}
 	createEnemy(150, 150, 1, map2, enemiesMap2, 30, 30)
-	createStanScene(map2, enemiesMap2, {30 + map2.ox, 30 + map2.oy}, 1)
+	createStanScene(map2, enemiesMap2, {30 + map2.ox, 30 + map2.oy}, 1)--]]
 
 
 	--BUTTONS------------------------------------------------
@@ -144,6 +148,16 @@ end
 function createMainScene()
 	local scene = {}
 	scene.type = mainScene
+	table.insert(scenes, scene)
+end
+
+function createDialogScene(txts, img, nx)
+	local scene = {}
+	scene.type = dialogScene
+	scene.txtId = 1
+	scene.txts = txts
+	scene.img = img
+	scene.nextScene = nx
 	table.insert(scenes, scene)
 end
 
@@ -210,6 +224,8 @@ function updateScene()
 		updateStanScene(mx, my, mousePressed)
 	elseif tp == mainScene then
 		updateMainScene(mx, my, mousePressed)
+	elseif tp == dialogScene then
+		updateDialogScene(mousePressed)
 	end
 end
 
@@ -291,16 +307,20 @@ end
 
 function updateMainScene(mx, my, mousePressed)
 	local btId = updateButtons(mainButtons, mx, my, mousePressed)
-	if btId ~= -1 then
+	if btId ~= -1 then --todo
 		if btId == startButton then
-			id = tid
-			definePlayerPosition(scenes[id])
+			if tid == 1 then
+				id = 2
+			elseif tid == 2 then
+				id = 3
+			end
+			--definePlayerPosition(scenes[id]) --vai dar erro em dial
 		elseif btId == previousButton then --(<)
-			if tid > starterId then
+			if tid > 1 then
 				tid = tid - 1
 			end
 		elseif btId == nextButton then
-			if tid < limit + starterId then
+			if tid < limit then
 				tid = tid + 1
 			end
 		end
@@ -333,6 +353,17 @@ function updateWinStanScene(enemies, mx, my, mousePressed)
 					definePlayerPosition(scenes[id])
 				end
 			end
+		end
+	end
+end
+
+function updateDialogScene(mousePressed)
+	if mousePressed then
+		if scenes[id].txtId < #scenes[id].txts then
+			scenes[id].txtId = scenes[id].txtId + 1
+		else
+			scenes[id].txtId = 1
+			id = scenes[id].nextScene
 		end
 	end
 end
@@ -370,7 +401,6 @@ function updateLimit()
 			limit = limit + 1
 		end
 	end
-	limit = limit - 1
 end
 
 --DRAW
@@ -392,6 +422,8 @@ function drawScene()
 		end
 	elseif tp == mainScene then
 		drawButtons(mainButtons)
+	elseif tp == dialogScene then
+		love.graphics.print(scenes[id].txts[scenes[id].txtId], 0, 0)
 	end
 end
 
