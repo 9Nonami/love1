@@ -80,11 +80,11 @@ function init()
 
 
 	--cena 2
-	createDialogScene({"uno", "dos", "tres"}, nil, 1)
+	createDialogScene({"uno", "dos", "tres"}, nil, 3, 1)
 
 
 	--cena 3
-	--[[local map1 = {
+	local map1 = {
 					1,1,1,1,1,1,1,1,1,1,
 					1,0,0,0,0,0,0,1,0,1,
 					1,1,1,1,1,1,0,1,0,1,
@@ -100,11 +100,15 @@ function init()
 	createEnemy(210, 210, 1, map1, enemiesMap1, 30, 90)
 	createEnemy(240, 30, 1, map1, enemiesMap1, 210, 120)
 	createEnemy(30, 240, 1, map1, enemiesMap1, 30, 150)
-	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy}, 3)--]]
-	
+	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy}, 4)
+
 
 	--cena 4
-	--[[local map2 = {
+	createDialogScene({"asdasdad", "zxczczxcxz"}, nil, 5, 2)
+
+
+	--cena 5
+	local map2 = {
 					1,1,1,1,1,1,1,1,1,1,
 					1,0,0,0,0,0,0,0,0,1,
 					1,0,0,0,0,0,0,0,0,1,
@@ -118,7 +122,7 @@ function init()
 	setBasicMapInfo(map2, 10, 10, 0, 0)
 	local enemiesMap2 = {}
 	createEnemy(150, 150, 1, map2, enemiesMap2, 30, 30)
-	createStanScene(map2, enemiesMap2, {30 + map2.ox, 30 + map2.oy}, 1)--]]
+	createStanScene(map2, enemiesMap2, {30 + map2.ox, 30 + map2.oy}, 1)
 
 
 	--BUTTONS------------------------------------------------
@@ -151,13 +155,14 @@ function createMainScene()
 	table.insert(scenes, scene)
 end
 
-function createDialogScene(txts, img, nx)
+function createDialogScene(txts, img, nx, sid)
 	local scene = {}
 	scene.type = dialogScene
 	scene.txtId = 1
 	scene.txts = txts
 	scene.img = img
 	scene.nextScene = nx
+	scene.sid = sid
 	table.insert(scenes, scene)
 end
 
@@ -312,9 +317,8 @@ function updateMainScene(mx, my, mousePressed)
 			if tid == 1 then
 				id = 2
 			elseif tid == 2 then
-				id = 3
+				id = 4
 			end
-			--definePlayerPosition(scenes[id]) --vai dar erro em dial
 		elseif btId == previousButton then --(<)
 			if tid > 1 then
 				tid = tid - 1
@@ -348,10 +352,7 @@ function updateWinStanScene(enemies, mx, my, mousePressed)
 			if tempId == nextSceneButton then
 				resetStan()
 				id = scenes[id].nextScene
-				checkUnlockScene(id) --se deu unlock, salva
-				if scenes[id].type == stanScene then
-					definePlayerPosition(scenes[id])
-				end
+				checkUnlockScene()
 			end
 		end
 	end
@@ -364,6 +365,9 @@ function updateDialogScene(mousePressed)
 		else
 			scenes[id].txtId = 1
 			id = scenes[id].nextScene
+			if scenes[id].type == stanScene then
+				definePlayerPosition(scenes[id])
+			end
 		end
 	end
 end
@@ -378,15 +382,10 @@ function updateButtons(bts, mx, my, mousePressed)
 	return -1
 end
 
-function checkUnlockScene(uid)
-	--precisa ser diferente de 1, pos 1 eh o main
-	--dar um jeito de melhorar isso para nextscenes
-	--que nao sejam stan. ex.: uid > x; x = nonstan
-	if uid ~= 1 then
-		-- -1 pois eh o offset atual --todo: colocar em var
-		-- main ocupa a cena1, entao precisa desconsiderar 1 unidade
-		if save[uid - 1] ~= 0 then
-			save[uid - 1] = 0
+function checkUnlockScene()
+	if scenes[id].type == dialogScene then
+		if save[scenes[id].sid] ~= 0 then
+			save[scenes[id].sid] = 0
 			saveData.save(save, saveFileName)
 			updateLimit()
 		end
