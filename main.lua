@@ -65,6 +65,12 @@ function initSaveFile()
 		for i = 2, totalSlots do
 			save[i] = -1
 		end
+
+		local sc1 = {-1}
+		local sc2 = {-1}
+
+		save.sc = {sc1, sc2}
+
 		saveData.save(save, saveFileName)
 	end
 
@@ -80,7 +86,7 @@ function init()
 
 
 	--cena 2
-	createDialogScene({"uno", "dos", "tres"}, nil, 3, 1)
+	createDialogScene({"uno", "dos", "tres"}, nil, 3)
 
 
 	--cena 3
@@ -100,11 +106,11 @@ function init()
 	createEnemy(210, 210, 1, map1, enemiesMap1, 30, 90)
 	createEnemy(240, 30, 1, map1, enemiesMap1, 210, 120)
 	createEnemy(30, 240, 1, map1, enemiesMap1, 30, 150)
-	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy}, 4)
+	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy}, 4, {1, 1}, {true, 2})
 
 
 	--cena 4
-	createDialogScene({"asdasdad", "zxczczxcxz"}, nil, 5, 2)
+	createDialogScene({"asdasdad", "zxczczxcxz"}, nil, 5)
 
 
 	--cena 5
@@ -122,7 +128,7 @@ function init()
 	setBasicMapInfo(map2, 10, 10, 0, 0)
 	local enemiesMap2 = {}
 	createEnemy(150, 150, 1, map2, enemiesMap2, 30, 30)
-	createStanScene(map2, enemiesMap2, {30 + map2.ox, 30 + map2.oy}, 1)
+	createStanScene(map2, enemiesMap2, {30 + map2.ox, 30 + map2.oy}, 1, {2, 1}, {true, 3})
 
 
 	--BUTTONS------------------------------------------------
@@ -138,7 +144,16 @@ function init()
 	table.insert(stanButtons, next_scene_button)
 end
 
-function createStanScene(mp, ens, ppos, nx)
+function createStanScene(mp, ens, ppos, nx, idseq, tnx)
+	--mp = mapa
+	--ens = inimigos
+	--ppos = posicao do player neste mapa
+	--nx = next scene
+	--idseq = id do conjunto / id desta cena no conjunto
+	--tnx = se a cena for a ultima de uma sequencia, carrega
+	--		a informaca do proximo char a ser liberado
+	--		ex: {false} > para cenas ~= da ultima
+	--			{true, 2} > para a ultima cena da sequencia, 2 = id da cena em save
 	local scene = {}
 	scene.type = stanScene
 	scene.map = mp
@@ -146,6 +161,8 @@ function createStanScene(mp, ens, ppos, nx)
 	scene.endScene = false
 	scene.ppos = ppos
 	scene.nextScene = nx
+	scene.idseq = idseq
+	scene.tnx = tnx
 	table.insert(scenes, scene)
 end
 
@@ -155,14 +172,13 @@ function createMainScene()
 	table.insert(scenes, scene)
 end
 
-function createDialogScene(txts, img, nx, sid)
+function createDialogScene(txts, img, nx)
 	local scene = {}
 	scene.type = dialogScene
 	scene.txtId = 1
 	scene.txts = txts
 	scene.img = img
 	scene.nextScene = nx
-	scene.sid = sid
 	table.insert(scenes, scene)
 end
 
@@ -345,14 +361,20 @@ function updateWinStanScene(enemies, mx, my, mousePressed)
 		end
 		if win then
 			scenes[id].endScene = true
+
+			if save.sc[scenes[id].idseq[1]][scenes[id].idseq[2]] == -1 then
+				save.sc[scenes[id].idseq[1]][scenes[id].idseq[2]] = 0
+				print("going to save")
+				saveData.save(save, saveFileName)
+			end
 		end
 	else
 		local tempId = updateButtons(stanButtons, mx, my, mousePressed)
 		if tempId ~= -1 then -- -1 em var
 			if tempId == nextSceneButton then
 				resetStan()
-				id = scenes[id].nextScene
 				checkUnlockScene()
+				id = scenes[id].nextScene
 			end
 		end
 	end
@@ -383,9 +405,10 @@ function updateButtons(bts, mx, my, mousePressed)
 end
 
 function checkUnlockScene()
-	if scenes[id].type == dialogScene then
-		if save[scenes[id].sid] ~= 0 then
-			save[scenes[id].sid] = 0
+	if scenes[id].tnx[1] then --valor true = ultima cena do conj.
+		if save[scenes[id].tnx[2]] == -1 then --tnx[2] == nextScene para unlock
+			print("salvando")
+			save[scenes[id].tnx[2]] = 0
 			saveData.save(save, saveFileName)
 			updateLimit()
 		end
