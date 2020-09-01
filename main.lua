@@ -339,6 +339,7 @@ function updateMainScene(mx, my, mousePressed)
 			elseif tid == 2 then
 				id = 4
 			end
+			resetButtons(mainButtons)
 		elseif btId == previousButton then --(<)
 			if tid > 1 then
 				tid = tid - 1
@@ -523,5 +524,11 @@ function resetStan()
 		scenes[id].enemies[i].x = scenes[id].enemies[i].orx
 		scenes[id].enemies[i].y = scenes[id].enemies[i].ory
 		scenes[id].enemies[i].alive = true
+	end
+end
+
+function resetButtons(buttons)
+	for i = 1, #buttons do
+		buttons[i].on = false
 	end
 end
