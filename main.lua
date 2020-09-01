@@ -270,15 +270,15 @@ function updatePlayer()
 	end
 
 	if down and not downCollide(scenes[id].map, player) then
-    	player.y = player.y + player.speed
+		player.y = player.y + player.speed
 	end
-	
+
 	if left and not leftCollide(scenes[id].map, player) then
-    	player.x = player.x - player.speed
+		player.x = player.x - player.speed
 	end
 
 	if right and not rightCollide(scenes[id].map, player) then
-    	player.x = player.x + player.speed
+		player.x = player.x + player.speed
 	end
 end
 
@@ -313,20 +313,20 @@ function updateEnemy(enemy)
 		end
 
 		if down and not downCollide(scenes[id].map, enemy) then
-        	enemy.y = enemy.y + enemy.speed
-	   	end
+			enemy.y = enemy.y + enemy.speed
+		end
 		
 		if left and not leftCollide(scenes[id].map, enemy) then
-        	enemy.x = enemy.x - enemy.speed
-    	end
+			enemy.x = enemy.x - enemy.speed
+		end
 
 		if right and not rightCollide(scenes[id].map, enemy) then
-        	enemy.x = enemy.x + enemy.speed
-    	end
+			enemy.x = enemy.x + enemy.speed
+		end
 
-    	if enemy.x == enemy.gx and enemy.y == enemy.gy then
-    		enemy.alive = false
-    	end
+		if enemy.x == enemy.gx and enemy.y == enemy.gy then
+			enemy.alive = false
+		end
 	end
 end
 
@@ -433,7 +433,6 @@ function checkSave()
 		end
 
 		--salva
-		print("saving...")
 		saveData.save(save, saveFileName)
 	end
 end
