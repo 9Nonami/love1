@@ -68,8 +68,13 @@ function initSaveFile()
 
 		local sc1 = {-1}
 		local sc2 = {-1}
-
 		save.sc = {sc1, sc2}
+
+		local uv = {}
+		for i = 1, totalSlots do
+			uv[i] = -1
+		end
+		save.uv = uv
 
 		saveData.save(save, saveFileName)
 	end
@@ -128,7 +133,7 @@ function init()
 	setBasicMapInfo(map2, 10, 10, 0, 0)
 	local enemiesMap2 = {}
 	createEnemy(150, 150, 1, map2, enemiesMap2, 30, 30)
-	createStanScene(map2, enemiesMap2, {30 + map2.ox, 30 + map2.oy}, 1, {2, 1}, {true, 3})
+	createStanScene(map2, enemiesMap2, {30 + map2.ox, 30 + map2.oy}, 1, {2, 1}, {true, 1})
 
 
 	--BUTTONS------------------------------------------------
@@ -265,16 +270,16 @@ function updatePlayer()
 	end
 
 	if down and not downCollide(scenes[id].map, player) then
-        player.y = player.y + player.speed
-    end
+    	player.y = player.y + player.speed
+	end
 	
 	if left and not leftCollide(scenes[id].map, player) then
-        player.x = player.x - player.speed
-    end
+    	player.x = player.x - player.speed
+	end
 
 	if right and not rightCollide(scenes[id].map, player) then
-        player.x = player.x + player.speed
-    end
+    	player.x = player.x + player.speed
+	end
 end
 
 function updateEnemies(enemies)
@@ -308,21 +313,20 @@ function updateEnemy(enemy)
 		end
 
 		if down and not downCollide(scenes[id].map, enemy) then
-	        enemy.y = enemy.y + enemy.speed
-	    end
+        	enemy.y = enemy.y + enemy.speed
+	   	end
 		
 		if left and not leftCollide(scenes[id].map, enemy) then
-	        enemy.x = enemy.x - enemy.speed
-	    end
+        	enemy.x = enemy.x - enemy.speed
+    	end
 
 		if right and not rightCollide(scenes[id].map, enemy) then
-	        enemy.x = enemy.x + enemy.speed
-	    end
+        	enemy.x = enemy.x + enemy.speed
+    	end
 
-	    if enemy.x == enemy.gx and enemy.y == enemy.gy then
-	    	enemy.alive = false
-	    end
-
+    	if enemy.x == enemy.gx and enemy.y == enemy.gy then
+    		enemy.alive = false
+    	end
 	end
 end
 
@@ -361,19 +365,13 @@ function updateWinStanScene(enemies, mx, my, mousePressed)
 		end
 		if win then
 			scenes[id].endScene = true
-
-			if save.sc[scenes[id].idseq[1]][scenes[id].idseq[2]] == -1 then
-				save.sc[scenes[id].idseq[1]][scenes[id].idseq[2]] = 0
-				print("going to save")
-				saveData.save(save, saveFileName)
-			end
+			checkSave()
 		end
 	else
 		local tempId = updateButtons(stanButtons, mx, my, mousePressed)
-		if tempId ~= -1 then -- -1 em var
+		if tempId ~= -1 then
 			if tempId == nextSceneButton then
 				resetStan()
-				checkUnlockScene()
 				id = scenes[id].nextScene
 			end
 		end
@@ -404,14 +402,39 @@ function updateButtons(bts, mx, my, mousePressed)
 	return -1
 end
 
-function checkUnlockScene()
-	if scenes[id].tnx[1] then --valor true = ultima cena do conj.
-		if save[scenes[id].tnx[2]] == -1 then --tnx[2] == nextScene para unlock
-			print("salvando")
-			save[scenes[id].tnx[2]] = 0
-			saveData.save(save, saveFileName)
-			updateLimit()
+function checkSave()
+
+	--o salvamento soh vai acontecer uma vez, quando a cena for 
+	--concluida pela primeira vez (win = true)
+
+	--verifica se esta cena ja foi concluida (pack/scene)
+	if save.sc[scenes[id].idseq[1]][scenes[id].idseq[2]] == -1 then
+		
+		--define como concluida
+		save.sc[scenes[id].idseq[1]][scenes[id].idseq[2]] = 0
+
+		--verifica se esta cena eh a ultima da sequencia
+		if scenes[id].tnx[1] then
+
+			--eh a ultima, entao resgata a nextScene para desbloquear no main
+			if save[scenes[id].tnx[2]] == -1 then
+
+				--o id da proxima cena eh liberado no main
+				save[scenes[id].tnx[2]] = 0
+
+				--limite atualizado
+				updateLimit()
+			end
+
+			--como eh a ultima cena, desbloqueia este id para a galeria
+			if save.uv[scenes[id].idseq[1]] == -1 then
+				save.uv[scenes[id].idseq[1]] = 0
+			end
 		end
+
+		--salva
+		print("saving...")
+		saveData.save(save, saveFileName)
 	end
 end
 
