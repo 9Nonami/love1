@@ -8,17 +8,20 @@ local player = {}
 local scenes = {}
 local mainButtons = {}
 local stanButtons = {}
+local gallerySlots = {}
 
 --tipos de cenas
 local mainScene = -1
 local stanScene = -2
 local dialogScene = -3
+local galleryScene = -4
 
 --ids dos botoes
 local startButton = 1
 local nextSceneButton = 2
 local nextButton = 3
 local previousButton = 4
+local galleryButton = 5
 
 local mousePressed = false
 
@@ -47,7 +50,20 @@ function love.load()
 	sprites.prev = love.graphics.newImage("sprites/prev.png")
 	sprites.next = love.graphics.newImage("sprites/next.png")
 	sprites.start = love.graphics.newImage("sprites/start.png")
+	sprites.gallery = love.graphics.newImage("sprites/gallery.png")
 	sprites.focus = love.graphics.newImage("sprites/focus-bt.png")
+
+	sprites.focusg = love.graphics.newImage("sprites/gallery/focus.png")
+	sprites.lock = love.graphics.newImage("sprites/gallery/lock.png")
+	sprites.um = love.graphics.newImage("sprites/gallery/1.png")
+	sprites.dois = love.graphics.newImage("sprites/gallery/2.png")
+	sprites.tres = love.graphics.newImage("sprites/gallery/3.png")
+	sprites.quatro = love.graphics.newImage("sprites/gallery/4.png")
+	sprites.cinco = love.graphics.newImage("sprites/gallery/5.png")
+	sprites.seis = love.graphics.newImage("sprites/gallery/6.png")
+	sprites.sete = love.graphics.newImage("sprites/gallery/7.png")
+	sprites.oito = love.graphics.newImage("sprites/gallery/8.png")
+
 	initSaveFile()
 	init()
 end
@@ -89,12 +105,15 @@ function init()
 	--cena 1 em scenes
 	createMainScene()
 
-
 	--cena 2
-	createDialogScene({"uno", "dos", "tres"}, nil, 3)
+	createGalleryScene()
 
 
 	--cena 3
+	createDialogScene({"uno", "dos", "tres"}, nil, 4)
+
+
+	--cena 4
 	local map1 = {
 					1,1,1,1,1,1,1,1,1,1,
 					1,0,0,0,0,0,0,1,0,1,
@@ -111,14 +130,14 @@ function init()
 	createEnemy(210, 210, 1, map1, enemiesMap1, 30, 90)
 	createEnemy(240, 30, 1, map1, enemiesMap1, 210, 120)
 	createEnemy(30, 240, 1, map1, enemiesMap1, 30, 150)
-	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy}, 4, {1, 1}, {true, 2})
-
-
-	--cena 4
-	createDialogScene({"asdasdad", "zxczczxcxz"}, nil, 5)
+	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy}, 5, {1, 1}, {true, 2})
 
 
 	--cena 5
+	createDialogScene({"asdasdad", "zxczczxcxz"}, nil, 6)
+
+
+	--cena 6
 	local map2 = {
 					1,1,1,1,1,1,1,1,1,1,
 					1,0,0,0,0,0,0,0,0,1,
@@ -141,10 +160,12 @@ function init()
 	local next_scene_button = createButton(300, 10, sprites.ns, sprites.focus, nextSceneButton)
 	local next_button = createButton(110, 100, sprites.next, sprites.focus, nextButton)
 	local prev_button = createButton(10, 100, sprites.prev, sprites.focus, previousButton)
+	local gallery_button = createButton(110, 10, sprites.gallery, sprites.focus, galleryButton)
 
 	table.insert(mainButtons, start_button)
 	table.insert(mainButtons, prev_button)
 	table.insert(mainButtons, next_button)
+	table.insert(mainButtons, gallery_button)
 
 	table.insert(stanButtons, next_scene_button)
 end
@@ -184,6 +205,24 @@ function createDialogScene(txts, img, nx)
 	scene.txts = txts
 	scene.img = img
 	scene.nextScene = nx
+	table.insert(scenes, scene)
+end
+
+function createGalleryScene()
+	local scene = {}
+	scene.type = galleryScene
+
+	local slot1 = createButton(30, 30, sprites.um, sprites.focusg, 1)
+	local slot2 = createButton(90, 30, sprites.dois, sprites.focusg, 2)
+	local slot3 = createButton(150, 30, sprites.tres, sprites.focusg, 3)
+	local slot4 = createButton(210, 30, sprites.quatro, sprites.focusg, 4)
+	local slot5 = createButton(30, 90, sprites.cinco, sprites.focusg, 5)
+	local slot6 = createButton(90, 90, sprites.seis, sprites.focusg, 6)
+	local slot7 = createButton(150, 90, sprites.sete, sprites.focusg, 7)
+	local slot8 = createButton(210, 90, sprites.oito, sprites.focusg, 8)
+
+	gallerySlots = {slot1, slot2, slot3, slot4, slot5, slot6, slot7, slot8}
+
 	table.insert(scenes, scene)
 end
 
@@ -252,6 +291,8 @@ function updateScene()
 		updateMainScene(mx, my, mousePressed)
 	elseif tp == dialogScene then
 		updateDialogScene(mousePressed)
+	elseif tp == galleryScene then
+		updateGalleryScene(mx, my)
 	end
 end
 
@@ -335,9 +376,9 @@ function updateMainScene(mx, my, mousePressed)
 	if btId ~= -1 then --todo
 		if btId == startButton then
 			if tid == 1 then
-				id = 2
+				id = 3
 			elseif tid == 2 then
-				id = 4
+				id = 5
 			end
 			resetButtons(mainButtons)
 		elseif btId == previousButton then --(<)
@@ -348,6 +389,9 @@ function updateMainScene(mx, my, mousePressed)
 			if tid < limit then
 				tid = tid + 1
 			end
+		elseif btId == galleryButton then
+			id = 2
+			resetButtons(mainButtons)
 		end
 	end
 end
@@ -393,11 +437,27 @@ function updateDialogScene(mousePressed)
 	end
 end
 
+function updateGalleryScene(mx, my)
+	local tslotId = updateGallerySlots(gallerySlots, mx, my, mousePressed)
+end
+
 function updateButtons(bts, mx, my, mousePressed)
 	for i = 1, #bts do
 		bts[i].on = mx > bts[i].x and mx < bts[i].x + bts[i].w and my > bts[i].y and my < bts[i].y + bts[i].h
 		if mousePressed  and bts[i].on then
 			return bts[i].id
+		end
+	end
+	return -1
+end
+
+function updateGallerySlots(bts, mx, my, mousePressed)
+	for i = 1, #bts do
+		if save.uv[i] ~= -1 then
+			bts[i].on = mx > bts[i].x and mx < bts[i].x + bts[i].w and my > bts[i].y and my < bts[i].y + bts[i].h
+			if mousePressed  and bts[i].on then
+				return bts[i].id
+			end
 		end
 	end
 	return -1
@@ -469,6 +529,8 @@ function drawScene()
 		drawButtons(mainButtons)
 	elseif tp == dialogScene then
 		love.graphics.print(scenes[id].txts[scenes[id].txtId], 0, 0)
+	elseif tp == galleryScene then
+		drawSlots(gallerySlots)
 	end
 end
 
@@ -514,6 +576,22 @@ function drawButtons(bts)
 			love.graphics.draw(bts[i].stan, bts[i].x, bts[i].y)
 		else
 			love.graphics.draw(bts[i].focus, bts[i].x, bts[i].y)
+		end
+	end
+end
+
+function drawSlots(slts)
+	for i = 1, #slts do
+		if save.uv[i] == -1 then
+			--slot bloqueado
+			love.graphics.draw(sprites.lock, slts[i].x, slts[i].y)
+		else
+			--slot desbloqueado
+			if slts[i].on then
+				love.graphics.draw(slts[i].focus, slts[i].x, slts[i].y)
+			else
+				love.graphics.draw(slts[i].stan, slts[i].x, slts[i].y)				
+			end
 		end
 	end
 end
