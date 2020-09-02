@@ -446,7 +446,7 @@ end
 function updateGalleryScene(mx, my)
 	local tslotId = updateGallerySlots(gallerySlots, mx, my, mousePressed)
 	if tslotId == -1 then --nenhum slot foi selecionado
-		local tbuttonId updateButtons(galleryButtons, mx, my, mousePressed)
+		local tbuttonId = updateButtons(galleryButtons, mx, my, mousePressed)
 		if tbuttonId == mainButton then --como soh tem 1, nao vou verificar com -1
 			id = 1
 			--reset
@@ -457,7 +457,7 @@ end
 function updateButtons(bts, mx, my, mousePressed)
 	for i = 1, #bts do
 		bts[i].on = mx > bts[i].x and mx < bts[i].x + bts[i].w and my > bts[i].y and my < bts[i].y + bts[i].h
-		if mousePressed  and bts[i].on then
+		if mousePressed and bts[i].on then
 			print(bts[i].id)
 			return bts[i].id
 		end
