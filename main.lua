@@ -8,6 +8,7 @@ local player = {}
 local scenes = {}
 local mainButtons = {}
 local stanButtons = {}
+local galleryButtons = {}
 local gallerySlots = {}
 
 --tipos de cenas
@@ -22,6 +23,7 @@ local nextSceneButton = 2
 local nextButton = 3
 local previousButton = 4
 local galleryButton = 5
+local mainButton = 6
 
 local mousePressed = false
 
@@ -51,6 +53,7 @@ function love.load()
 	sprites.next = love.graphics.newImage("sprites/next.png")
 	sprites.start = love.graphics.newImage("sprites/start.png")
 	sprites.gallery = love.graphics.newImage("sprites/gallery.png")
+	sprites.main = love.graphics.newImage("sprites/main.png")
 	sprites.focus = love.graphics.newImage("sprites/focus-bt.png")
 
 	sprites.focusg = love.graphics.newImage("sprites/gallery/focus.png")
@@ -161,6 +164,7 @@ function init()
 	local next_button = createButton(110, 100, sprites.next, sprites.focus, nextButton)
 	local prev_button = createButton(10, 100, sprites.prev, sprites.focus, previousButton)
 	local gallery_button = createButton(110, 10, sprites.gallery, sprites.focus, galleryButton)
+	local main_button = createButton(400, 10, sprites.main, sprites.focus, mainButton)
 
 	table.insert(mainButtons, start_button)
 	table.insert(mainButtons, prev_button)
@@ -168,6 +172,8 @@ function init()
 	table.insert(mainButtons, gallery_button)
 
 	table.insert(stanButtons, next_scene_button)
+
+	table.insert(galleryButtons, main_button)
 end
 
 function createStanScene(mp, ens, ppos, nx, idseq, tnx)
@@ -439,12 +445,20 @@ end
 
 function updateGalleryScene(mx, my)
 	local tslotId = updateGallerySlots(gallerySlots, mx, my, mousePressed)
+	if tslotId == -1 then --nenhum slot foi selecionado
+		local tbuttonId updateButtons(galleryButtons, mx, my, mousePressed)
+		if tbuttonId == mainButton then --como soh tem 1, nao vou verificar com -1
+			id = 1
+			--reset
+		end
+	end
 end
 
 function updateButtons(bts, mx, my, mousePressed)
 	for i = 1, #bts do
 		bts[i].on = mx > bts[i].x and mx < bts[i].x + bts[i].w and my > bts[i].y and my < bts[i].y + bts[i].h
 		if mousePressed  and bts[i].on then
+			print(bts[i].id)
 			return bts[i].id
 		end
 	end
@@ -531,6 +545,7 @@ function drawScene()
 		love.graphics.print(scenes[id].txts[scenes[id].txtId], 0, 0)
 	elseif tp == galleryScene then
 		drawSlots(gallerySlots)
+		drawButtons(galleryButtons)
 	end
 end
 
