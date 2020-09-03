@@ -16,6 +16,7 @@ local mainScene = -1
 local stanScene = -2
 local dialogScene = -3
 local galleryScene = -4
+local viewScene = -5
 
 --ids dos botoes
 local startButton = 1
@@ -67,6 +68,16 @@ function love.load()
 	sprites.sete = love.graphics.newImage("sprites/gallery/7.png")
 	sprites.oito = love.graphics.newImage("sprites/gallery/8.png")
 
+	local char1 = love.graphics.newImage("sprites/chars/1.png")
+	local char2 = love.graphics.newImage("sprites/chars/2.png")
+	local char3 = love.graphics.newImage("sprites/chars/3.png")
+	local char4 = love.graphics.newImage("sprites/chars/4.png")
+	local char5 = love.graphics.newImage("sprites/chars/5.png")
+	local char6 = love.graphics.newImage("sprites/chars/6.png")
+	local char7 = love.graphics.newImage("sprites/chars/7.png")
+	local char8 = love.graphics.newImage("sprites/chars/8.png")
+	sprites.char = {char1, char2, char3, char4, char5, char6, char7, char8}
+
 	initSaveFile()
 	init()
 end
@@ -111,12 +122,15 @@ function init()
 	--cena 2
 	createGalleryScene()
 
-
 	--cena 3
-	createDialogScene({"uno", "dos", "tres"}, nil, 4)
+	createViewScene()
 
 
 	--cena 4
+	createDialogScene({"uno", "dos", "tres"}, nil, 5)
+
+
+	--cena 5
 	local map1 = {
 					1,1,1,1,1,1,1,1,1,1,
 					1,0,0,0,0,0,0,1,0,1,
@@ -133,14 +147,14 @@ function init()
 	createEnemy(210, 210, 1, map1, enemiesMap1, 30, 90)
 	createEnemy(240, 30, 1, map1, enemiesMap1, 210, 120)
 	createEnemy(30, 240, 1, map1, enemiesMap1, 30, 150)
-	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy}, 5, {1, 1}, {true, 2})
-
-
-	--cena 5
-	createDialogScene({"asdasdad", "zxczczxcxz"}, nil, 6)
+	createStanScene(map1, enemiesMap1, {30 + map1.ox, 30 + map1.oy}, 6, {1, 1}, {true, 2})
 
 
 	--cena 6
+	createDialogScene({"asdasdad", "zxczczxcxz"}, nil, 7)
+
+
+	--cena 7
 	local map2 = {
 					1,1,1,1,1,1,1,1,1,1,
 					1,0,0,0,0,0,0,0,0,1,
@@ -232,6 +246,13 @@ function createGalleryScene()
 	table.insert(scenes, scene)
 end
 
+function createViewScene()
+	local scene = {}
+	scene.type = viewScene
+	scene.img = -1 --comecar com imagem?
+	table.insert(scenes, scene)
+end
+
 function createPlayer()
 	player.x = 0
 	player.y = 0
@@ -299,6 +320,8 @@ function updateScene()
 		updateDialogScene(mousePressed)
 	elseif tp == galleryScene then
 		updateGalleryScene(mx, my)
+	elseif tp == viewScene then
+		updateViewScene()
 	end
 end
 
@@ -382,9 +405,9 @@ function updateMainScene(mx, my, mousePressed)
 	if btId ~= -1 then --todo
 		if btId == startButton then
 			if tid == 1 then
-				id = 3
+				id = 4
 			elseif tid == 2 then
-				id = 5
+				id = 6
 			end
 			resetButtons(mainButtons)
 		elseif btId == previousButton then --(<)
@@ -449,9 +472,23 @@ function updateGalleryScene(mx, my)
 		local tbuttonId = updateButtons(galleryButtons, mx, my, mousePressed)
 		if tbuttonId == mainButton then --como soh tem 1, nao vou verificar com -1
 			id = 1
-			--reset
+			resetButtons(galleryButtons)
 		end
+	else
+		id = 3
+		configViewScene(tslotId)
+		resetButtons(gallerySlots)
 	end
+end
+
+function updateViewScene()
+	if mousePressed then
+		id = 2 --todo criar var para identificar as cenas (2 == gallery)
+	end
+end
+
+function configViewScene(imgid)
+	scenes[id].img = sprites.char[imgid]
 end
 
 function updateButtons(bts, mx, my, mousePressed)
@@ -546,6 +583,8 @@ function drawScene()
 	elseif tp == galleryScene then
 		drawSlots(gallerySlots)
 		drawButtons(galleryButtons)
+	elseif tp == viewScene then
+		love.graphics.draw(scenes[id].img, 0, 0)
 	end
 end
 
